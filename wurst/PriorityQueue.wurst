@@ -1,0 +1,126 @@
+package PriorityQueue
+int array heap1
+int array heap2
+int array heap3
+public interface CompareClosure<T>
+    function compare(T t1,T t2) returns int
+public interface PriorityQueueForEach<T>
+    function forEach(T t1)
+public interface PriorityQueueForEachString<T>
+    function forString(T t1) returns string
+public class PriorityQueue<T>
+    static hashtable priorityQueues = InitHashtable()
+    CompareClosure<T> compareClosure
+    int size = 0
+    function first() returns T
+        if size==0 
+            return null
+        int value = priorityQueues.loadInt(this castTo int, 0)
+        return value==0?null:value castTo T
+    private function setIndex(int index,T t)
+        priorityQueues.saveInt(this castTo int, index, t castTo int)
+    private function setIndexIndex(int index ,int index2)
+        priorityQueues.saveInt(this castTo int, index, index2)
+    private function getIndex(int index) returns int
+        return priorityQueues.loadInt(this castTo int, index)
+    private function getIndexObject(int index) returns T
+        return priorityQueues.loadInt(this castTo int,index) castTo T
+    private function popUp(int index)
+        int parent = ((index-1)/2).floor()
+        if(parent<0)
+            return 
+        T p = getIndex(parent) castTo T
+        T c = getIndex(index) castTo T
+        if compareClosure.compare(p, c) < 0
+            setIndex(parent,c)
+            setIndex(index, p)
+            if parent!=0
+                popUp(parent)
+    private function pushDown(int index,int m)
+        int c = index
+        int node = index*2+1
+        T temp = getIndexObject(c)
+        while node<=m
+            if node<m and compareClosure.compare(getIndexObject(node),getIndexObject(node+1))<0
+                node = node + 1
+            println(getIndex(c).toString())
+            println(getIndex(node).toString())
+            if compareClosure.compare(temp, getIndexObject(node)) < 0
+                setIndex(c,getIndexObject(node))
+                c = node
+                node = 2*node+1
+            else
+                break
+        setIndex(c, temp)
+    function enqueue(T t)
+        setIndex(size, t)
+        popUp(size)
+        size++
+    function dequeue() returns T
+        if first()!=null
+            let res = getIndexObject(0)
+            setIndex(0, getIndexObject(size-1))
+            setIndexIndex(size-1, 0)
+            pushDown(0, size-2)
+            size--
+            return res
+        else
+            return null
+    function build(vararg T ts)
+        for T t in ts
+            enqueue(t)
+    function clear()
+        size = 0
+    construct(CompareClosure<T> c)
+        compareClosure = c
+    function print()
+        for i=0 to size-1
+            Log.debug(getIndex(i).toString())
+    function debugForeach(PriorityQueueForEach<T> t)
+        for i=0 to size-1
+            t.forEach(getIndexObject(i))
+    function debugForInfoHeaped(PriorityQueueForEachString<T> str)
+        int start = 0
+        int ends = 0
+        for level=0 to 3
+            string levelHint = ""
+            for itr = start to ends
+                levelHint += str.forString(getIndexObject(itr)) +" "
+            Log.debug(levelHint)
+            start = ends+1
+            ends = start+start
+    function debugForInfoHeapedTest(PriorityQueueForEachString<T> str)
+        int start = 0
+        int ends = 0
+        for level= 0 to 3
+            string levelHint = ""
+            for i=0 to (Pow(2,(3-level).toReal())-1).round()-1
+                levelHint+=" "
+            string levelPad = ""
+            for i=0 to (Pow(2,(4-level).toReal())-1).round()-1
+                levelPad+=" "
+            for itr = start to ends
+                levelHint += str.forString(getIndexObject(itr)) +levelPad
+            println(levelHint)
+            start = ends+1
+            ends = start+start
+@Test public function a()
+    PriorityQueue<int> pq = new PriorityQueue<int>((t1,t2)->t1-t2)
+    for i=1 to 10
+        pq.enqueue(GetRandomInt(1, 10))
+    for i=1 to 10
+        pq.debugForInfoHeapedTest() (integer t1) ->
+            return t1.toString()
+        println("-----------")
+        pq.dequeue()
+
+
+/*
+   2       4
+ 1   2   4   5
+3 9 4 0 0 0 0 0 
+
+*/
+
+    
+    
